@@ -16,14 +16,6 @@ You are a helpful AI assistant and provide the answer for the question asked pol
 {question}
 """
 
-"""
-@cl.langchain_factory(use_async=False)
-def factory():
-    prompt = PromptTemplate(template=prompt_template, input_variables=["question"])
-    llm_chain = LLMChain(prompt=prompt, llm=llm)
-
-    return llm_chain
-"""
 
 @cl.langchain_factory(use_async=False)
 def main():
@@ -36,7 +28,7 @@ def main():
     return chain
 
 
-
+# synchronous 
 @cl.langchain_run
 async def run(agent, input_str):
     res = await cl.make_async(agent)(input_str, callbacks=[cl.ChainlitCallbackHandler()])
@@ -47,5 +39,4 @@ async def run(agent, input_str):
 async def run(agent, input_str):
     res = await agent.acall(input_str, callbacks=[cl.AsyncChainlitCallbackHandler()])
     await cl.Message(content=res).send()
-
 """
