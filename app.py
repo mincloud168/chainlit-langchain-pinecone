@@ -1,4 +1,4 @@
-from langchain import HuggingFaceHub
+from langchain import HuggingFaceHub, OpenAI
 from langchain import PromptTemplate, LLMChain
 import os
 
@@ -19,11 +19,16 @@ You are a helpful AI assistant and provide the answer for the question asked pol
 
 @cl.langchain_factory(use_async=False)
 def main():
-    #llm = OpenAI(temperature=0)
+    llm = OpenAI(temperature=0)
+    """
     repo_id = "tiiuae/falcon-7b-instruct"
     llm = HuggingFaceHub(huggingfacehub_api_token=HUGGINGFACEHUB_API_TOKEN, 
                         repo_id=repo_id, 
                         model_kwargs={"temperature":0.7, "max_new_tokens":500})
+    """
+
+    
+
     chain = LLMChain(llm=llm, prompt=PromptTemplate.from_template(prompt_template))
     return chain
 
@@ -31,6 +36,10 @@ def main():
 # synchronous 
 @cl.langchain_run
 async def run(agent, input_str):
+    #
+    from lab import construtPrompt, query_pinecone
+    
+    
     res = await cl.make_async(agent)(input_str, callbacks=[cl.ChainlitCallbackHandler()])
     await cl.Message(content=res["text"]).send()
 
