@@ -1,5 +1,7 @@
 from langchain import HuggingFaceHub, OpenAI
 from langchain import PromptTemplate, LLMChain
+
+from lab import query_pinecone,construtPrompt
 import os
 
 from dotenv import load_dotenv
@@ -8,7 +10,7 @@ import chainlit as cl
 # Load environment variables from .env file
 load_dotenv()
 
-HUGGINGFACEHUB_API_TOKEN = os.getenv("HUGGINGFACE_API_TOKEN")
+#HUGGINGFACEHUB_API_TOKEN = os.getenv("HUGGINGFACE_API_TOKEN")
 
 prompt_template = """
 You are a helpful AI assistant and provide the answer for the question asked politely.
@@ -16,6 +18,7 @@ You are a helpful AI assistant and provide the answer for the question asked pol
 {question}
 """
 
+index_name = "mtnet-faq"
 
 @cl.langchain_factory(use_async=False)
 def main():
@@ -37,10 +40,10 @@ def main():
 @cl.langchain_run
 async def run(agent, input_str):
     #
-    from lab import construtPrompt, query_pinecone
+    contexts = query_pinecone(query=input_str,index_name=index_name,text_key="content")
+    prompt_contexts = construtPrompt(query=input_str,contexts=contexts)
     
-    
-    res = await cl.make_async(agent)(input_str, callbacks=[cl.ChainlitCallbackHandler()])
+    res = await cl.make_async(agent)(prompt_contexts, callbacks=[cl.ChainlitCallbackHandler()])
     await cl.Message(content=res["text"]).send()
 
 """
