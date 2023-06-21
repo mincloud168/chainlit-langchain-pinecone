@@ -3,8 +3,6 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-
-
 #print(PINECONE_API_KEY)
 #print(PINECONE_ENV)
 #print(os.environ["OPENAI_API_KEY"])
@@ -75,7 +73,7 @@ def construtPrompt(query:str, contexts: list) -> list:
                 "\n\n---\n\n".join(contexts) +
                 prompt_end
             )
-    header = """Answer the question as truthfully as possible using the provided context, and if the answer is not contained within the text below, say "這個問題我目前無法回答您，請進一步來電洽訊客服人員."\n\nContext:\n"""
+    header = """Answer the question as truthfully as possible using the provided context, and if the answer is not contained within the text below, say "這個問題我目前無法回答您，請進一步來電洽訊客服人員."\n\n"""
 
     return header + prompt
 
