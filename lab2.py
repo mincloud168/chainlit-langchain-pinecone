@@ -15,7 +15,7 @@ def initPinecone(index_name:str, pinecone_api_key:str, pinecone_env:str, dimensi
         #environment="asia-southeast1-gcp"  # find next to API key  #us-central1-gcp #asia-southeast1-gcp
         environment=pinecone_env
     )
-        #environment="us-central1-gcp"  # find next to API key
+    #environment="us-central1-gcp"  # find next to API key
     # check if index already exists (it shouldn't if this is first time)
     if index_name not in pinecone.list_indexes():
     # if does not exist, create index
@@ -38,14 +38,17 @@ def search(index:pinecone.Index ,query:str):
     query_string = query
     text_emb = model.encode(query_string)
 
-    print(text_emb)
-    results = index.query(vector=text_emb,top_k=1)
+    
+    text_emb_list = text_emb.tolist()
+    print(text_emb_list)
+    results = index.query(vector=text_emb_list,top_k=1,include_metadata=True)
+    print(results)
 
 def main():
     index_name = "osha-images"
      
     index = initPinecone(index_name=index_name,pinecone_api_key=IMAGE_PINECONE_API_KEY,pinecone_env=IMAGE_PINECONE_ENV,dimension_len=512)
-    search(index=index,query="worker")  
+    search(index=index,query="building")  
 
 if __name__ == "__main__":
     main()
