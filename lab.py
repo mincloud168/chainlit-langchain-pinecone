@@ -79,7 +79,7 @@ def construtPrompt(query:str, contexts: list) -> list:
 
 def main()->None:
     query = "MTNet忘記密碼怎麼辦?"
-    index_name = "mtnet-faq"
+    index_name = "mtnet-faq-index"
     contexts = query_pinecone(query=query,index_name=index_name,text_key="content")
     p = construtPrompt(query=query,contexts=contexts)
     print(p)

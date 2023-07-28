@@ -18,7 +18,7 @@ You are a helpful AI assistant and provide the answer for the question asked pol
 {question}
 """
 
-index_name = "mtnet-faq"
+index_name = "mtnet-faq-index"
 
 @cl.langchain_factory(use_async=False)
 def main():
