@@ -1,6 +1,11 @@
 from langchain import HuggingFaceHub, OpenAI
 from langchain import PromptTemplate, LLMChain
 
+from langchain.agents import initialize_agent, AgentType, AgentExecutor
+from langchain.chat_models import ChatOpenAI
+from langchain.memory import ConversationBufferMemory
+from langchain.agents.structured_chat.prompt import SUFFIX
+
 from lab import query_pinecone,construtPrompt
 import os
 
@@ -20,31 +25,49 @@ You are a helpful AI assistant and provide the answer for the question asked pol
 
 index_name = "mtnet-faq-index"
 
-@cl.langchain_factory(use_async=False)
-def main():
-    llm = OpenAI(temperature=0)
+@cl.on_chat_start
+def start():
+    llm = ChatOpenAI(temperature=0, streaming=True)
     """
     repo_id = "tiiuae/falcon-7b-instruct"
     llm = HuggingFaceHub(huggingfacehub_api_token=HUGGINGFACEHUB_API_TOKEN, 
                         repo_id=repo_id, 
                         model_kwargs={"temperature":0.7, "max_new_tokens":500})
     """
+    tools = []
+    memory = ConversationBufferMemory(memory_key="chat_history")
+    _SUFFIX = "Chat history:\n{chat_history}\n\n" + SUFFIX
 
-    
-
-    chain = LLMChain(llm=llm, prompt=PromptTemplate.from_template(prompt_template))
-    return chain
+    agent = initialize_agent(
+        tools=tools,
+        llm=llm,
+        agent=AgentType.STRUCTURED_CHAT_ZERO_SHOT_REACT_DESCRIPTION,
+        memory=memory,
+        agent_kwargs={
+            "suffix": _SUFFIX,
+            "input_variables": ["input", "agent_scratchpad", "chat_history"],
+        },
+    )
+    cl.user_session.set("agent", agent)
 
 
 # synchronous 
-@cl.langchain_run
-async def run(agent, input_str):
+@cl.on_message
+async def main(message):
     #
-    contexts = query_pinecone(query=input_str,index_name=index_name,text_key="content")
-    prompt_contexts = construtPrompt(query=input_str,contexts=contexts)
+    agent = cl.user_session.get("agent")  # type: AgentExecutor
+    contexts = query_pinecone(query=message,index_name=index_name,text_key="content")
+    prompt_contexts = construtPrompt(query=message,contexts=contexts)
     
-    res = await cl.make_async(agent)(prompt_contexts, callbacks=[cl.ChainlitCallbackHandler()])
-    await cl.Message(content=res["text"]).send()
+
+    res = await cl.make_async(agent.run)(
+        input=prompt_contexts, callbacks=[cl.LangchainCallbackHandler()]
+    )
+    elements = []
+    actions = []
+    print(res)
+    await cl.Message(content=res, elements=elements, actions=actions).send()
+    #await cl.Message(content=res["text"]).send()
 
 """
 @cl.langchain_run
