@@ -28,12 +28,7 @@ index_name = "mtnet-faq-index"
 @cl.on_chat_start
 def start():
     llm = ChatOpenAI(temperature=0, streaming=True)
-    """
-    repo_id = "tiiuae/falcon-7b-instruct"
-    llm = HuggingFaceHub(huggingfacehub_api_token=HUGGINGFACEHUB_API_TOKEN, 
-                        repo_id=repo_id, 
-                        model_kwargs={"temperature":0.7, "max_new_tokens":500})
-    """
+
     tools = []
     memory = ConversationBufferMemory(memory_key="chat_history")
     _SUFFIX = "Chat history:\n{chat_history}\n\n" + SUFFIX
@@ -51,7 +46,6 @@ def start():
     cl.user_session.set("agent", agent)
 
 
-# synchronous 
 @cl.on_message
 async def main(message):
     #
@@ -59,13 +53,12 @@ async def main(message):
     contexts = query_pinecone(query=message,index_name=index_name,text_key="content")
     prompt_contexts = construtPrompt(query=message,contexts=contexts)
     
-
     res = await cl.make_async(agent.run)(
         input=prompt_contexts, callbacks=[cl.LangchainCallbackHandler()]
     )
     elements = []
     actions = []
-    print(res)
+
     await cl.Message(content=res, elements=elements, actions=actions).send()
     #await cl.Message(content=res["text"]).send()
 
@@ -74,4 +67,11 @@ async def main(message):
 async def run(agent, input_str):
     res = await agent.acall(input_str, callbacks=[cl.AsyncChainlitCallbackHandler()])
     await cl.Message(content=res).send()
+"""
+
+"""
+    repo_id = "tiiuae/falcon-7b-instruct"
+    llm = HuggingFaceHub(huggingfacehub_api_token=HUGGINGFACEHUB_API_TOKEN, 
+                        repo_id=repo_id, 
+                        model_kwargs={"temperature":0.7, "max_new_tokens":500})
 """
